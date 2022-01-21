@@ -4,7 +4,7 @@
  * Author:         Quoc Phong Ngo
  * Student ID:   301148406
  * Version:        1.0
- * Date Modified:   January 18th, 2022
+ * Date Modified:   January 20th, 2022
  */
 
 import SwiftUI
@@ -17,14 +17,13 @@ struct ContentView: View {
     @State private var numbers = [0, 1, 2]
     @State private var credits = 1000
     @State private var betAmount: String = ""
-    @State private var isAvailableSpinButton = false
+    @State private var isDisabledSpinButton = false
     private var jackPot = 5000
     var body: some View {
         ZStack {
             Rectangle()
                 .foregroundColor(Color(red: 197/255,
                     green: 231/255, blue: 255/255))
-//                .rotationEffect(Angle(degrees: 135))
                 .edgesIgnoringSafeArea(.all)
             
             VStack {
@@ -35,6 +34,7 @@ struct ContentView: View {
                         .foregroundColor(Color(red: 137/255, green: 80/255, blue: 23/255))
                 }.scaleEffect(2)
                 HStack {
+                    // logo
                     Image("slot-machine").resizable()
                         .frame(width: 95.0, height: 95.0)
                         .aspectRatio(1, contentMode: .fit)
@@ -42,14 +42,14 @@ struct ContentView: View {
                         .cornerRadius(20)
                         .padding(.all, 10)
                 }.padding(.bottom, 30)
-                // Jackpot
+                // Jackpot money
                 Text("Jackpot: " + String(jackPot))
                     .bold()
                     .foregroundColor(Color(red: 137/255, green: 80/255, blue: 23/255))
                     .padding(.all, 10)
                     .background(Color.white.opacity(0.8))
                     .cornerRadius(20)
-                // Credits counter
+                // Credits
                 Text("Player Money: " + String(credits))
                     .foregroundColor(.black)
                     .padding(.all, 10)
@@ -61,13 +61,21 @@ struct ContentView: View {
                         .padding(.all, 10)
                         .background(Color.white.opacity(0.8))
                         .cornerRadius(20)
-                    TextField("Enter Bet", text: $betAmount)
+                    let binding = Binding<String>(get: {
+                                self.betAmount
+                            }, set: {
+                                self.betAmount = $0
+                                // enable Spin button
+                                if(self.isDisabledSpinButton) {
+                                    self.isDisabledSpinButton = false
+                                }
+                            })
+                    TextField("Enter Bet", text: binding)
                         .foregroundColor(.red)
                         .padding(.all, 10)
                         .frame(width: 100, height: 35, alignment: .trailing)
                 }
                 
-                //Spacer()
                 // Cards
                 HStack {
                     Spacer()
@@ -99,10 +107,10 @@ struct ContentView: View {
                     Text("Spin")
                         .bold()
                         .foregroundColor(.white)
-                        .padding(.all, 15)
-                        .background(.blue)
+                        .padding(.all, 20)
+                        .background(self.isDisabledSpinButton == true ? Color.gray : Color.blue)
                         .cornerRadius(20)
-                }.padding(.bottom, 30).disabled(self.isAvailableSpinButton)
+                }.padding(.bottom, 30).disabled(self.isDisabledSpinButton)
                 
                 HStack {
                     // Reset Button
@@ -136,12 +144,11 @@ struct ContentView: View {
         let playerMoney = (betAmount as NSString).integerValue
         if(playerMoney > self.credits) {
             // grey out the Spin button
-            print("Not available")
-            self.isAvailableSpinButton = true
+            self.isDisabledSpinButton = true
             
             return
         } else {
-            self.isAvailableSpinButton = false
+            self.isDisabledSpinButton = false
         }
         self.numbers[0] = Int.random(in: 0...self.symbols.count - 1)
         self.numbers[1] = Int.random(in: 0...self.symbols.count - 1)
